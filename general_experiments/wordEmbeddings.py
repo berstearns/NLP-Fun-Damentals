@@ -53,4 +53,3 @@ print(losses)
 #########3 N-Gram bidirectional language modelling example
 
 # def predict_nextWord(model, ctxWords):
-    

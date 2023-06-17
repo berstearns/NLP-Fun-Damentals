@@ -1,0 +1,5 @@
+from python:3.11
+WORKDIR /app
+COPY ./docker_setup/requirements.txt /app/docker_setup/requirements.txt
+RUN pip3 install -U -r /app/docker_setup/requirements.txt 
+

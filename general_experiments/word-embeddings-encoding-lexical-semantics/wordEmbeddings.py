@@ -52,9 +52,10 @@ print(losses)
 
 #########3 N-Gram bidirectional language modelling example
 
-
-
-
-
 def predict_nextWord(model, ctxWords):
-    
+    with torch.no_grad():
+        logprobs = model(ctxWords)
+        print(logprobs)
+
+for idx, (ctxWords, nextWord) in enumerate(dataset):
+    print(idx)

@@ -53,9 +53,11 @@ print(losses)
 #########3 N-Gram bidirectional language modelling example
 
 def predict_nextWord(model, ctxWords):
+    ctxWordsIdxs_tensor = torch.tensor([word_to_idx[w] for w in ctxWords])
     with torch.no_grad():
-        logprobs = model(ctxWords)
+        logprobs = model(ctxWordsIdxs_tensor)
         print(logprobs)
 
 for idx, (ctxWords, nextWord) in enumerate(dataset):
-    print(idx)
+    print(f"{idx} PREDICTION: {predict_nextWord(model, ctxWords)} EXPECTED: {nextWord} ")
+    input()

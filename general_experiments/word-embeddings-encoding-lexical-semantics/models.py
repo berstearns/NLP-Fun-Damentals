@@ -13,4 +13,4 @@ class NGramLanguageModel(nn.Module):
         p1 = self.relu(self.linear1(embeds))
         p2 = self.relu(self.linear2(p1))
         log_probs = self.logsoftmax(p2)
-        return log_pros
+        return log_probs

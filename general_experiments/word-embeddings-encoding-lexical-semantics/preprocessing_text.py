@@ -40,7 +40,8 @@ def dataset_from_tokenizedSentence(tokenizedSentence,
 def create_vocab(tokenizedSentence):
     vocab = set(tokenizedSentence)
     word_to_idx = { word : idx for idx, word in enumerate(vocab) }
-    return vocab, word_to_idx 
+    idx_to_word = { idx : word for idx, word in enumerate(vocab) }
+    return vocab, word_to_idx, idx_to_word 
 
 
 
@@ -49,5 +50,5 @@ def create_vocab(tokenizedSentence):
 
 CONTEXT_SIZE = 2 
 CONTEXT_TYPE = "unidirectional" 
-vocab, word_to_idx = create_vocab(tokenizedSentence)
+vocab, word_to_idx, idx_to_word = create_vocab(tokenizedSentence)
 dataset = dataset_from_tokenizedSentence(tokenizedSentence, CONTEXT_TYPE, CONTEXT_SIZE)

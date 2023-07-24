@@ -9,6 +9,10 @@ import torch.nn.functional as F
 
 import numpy as np
 from torch.utils.data import TensorDataset, DataLoader, RandomSampler
+import evaluate
+
+bleu_calc = evaluate.load('evaluate-metric/bleu')
+
 DATASET_PATH = "./dataset/eng-fra.txt"
 
 
@@ -87,3 +91,45 @@ def prepareData(path, maxlen=10, lang1="french", lang2="english"):
         l_eng.add_sentence(ex)        
         l_fre.add_sentence(fx)
     return l_fre, l_eng, pairs
+
+def translate_evaluate(inputlang, outputlang, dataset: list, encoder:nn.Module, decoder:nn.Module) -> dict:
+    EOS_TOKEN = 1
+    MAXLEN = 10
+    criterion = nn.NLLLoss() 
+    inp_arr = list(map(lambda x: x[0], dataset))
+    references = list(map(lambda x: x[1], dataset))
+    all_preds = []
+    n = len(inp_arr)  
+    input_ids = np.zeros((n, MAXLEN), dtype=np.int32)
+    output_ids = np.zeros((n, MAXLEN), dtype=np.int32)
+
+    for idx, (in_sent, out_sent) in enumerate(dataset):
+        in_sent = in_sent.split(' ')
+        out_sent = out_sent.split(' ')
+        in_enc_arr = [inputlang.word2idx.get(word, 2) for word in in_sent] + [EOS_TOKEN]
+        out_enc_arr = [outputlang.word2idx.get(word, 2) for word in out_sent] + [EOS_TOKEN]
+        input_ids[idx, :len(in_enc_arr)] = in_enc_arr
+        output_ids[idx, :len(out_enc_arr)] = out_enc_arr
+
+    test_dset = TensorDataset(torch.LongTensor(input_ids), torch.LongTensor(output_ids))
+    dloader = DataLoader(test_dset, shuffle=False, batch_size=16)
+    
+    encoder.eval(), decoder.eval()
+    epoch_loss = 0
+    with torch.no_grad():
+        dpoints = 0
+        for batch in dloader:
+            X, y = batch
+            encoder_outputs, encoder_hidden = encoder(X)
+            decoder_outputs, decoder_hidden, _ = decoder(encoder_outputs, encoder_hidden)
+            pred_vals = decoder_outputs.argmax(dim=-1)
+            loss = criterion(
+            decoder_outputs.view(-1, decoder_outputs.size(-1)),
+            y.view(-1)
+            )
+            epoch_loss+=loss.item()
+            pred_labs = [" ".join([outputlang.idx2word[word.item()] for word in dec_t if word not in [0,1]]) for dec_t in pred_vals]
+            all_preds+=pred_labs
+            dpoints+=X.shape[0]
+    return bleu_calc.compute(predictions=all_preds, references=references), epoch_loss/dpoints
+

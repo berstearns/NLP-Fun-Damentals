@@ -131,5 +131,6 @@ def translate_evaluate(inputlang, outputlang, dataset: list, encoder:nn.Module, 
             pred_labs = [" ".join([outputlang.idx2word[word.item()] for word in dec_t if word not in [0,1]]) for dec_t in pred_vals]
             all_preds+=pred_labs
             dpoints+=X.shape[0]
-    return bleu_calc.compute(predictions=all_preds, references=references), epoch_loss/dpoints
+    return all_preds, references
+    # return bleu_calc.compute(predictions=all_preds, references=references), epoch_loss/dpoints
 
